@@ -20,6 +20,7 @@
 UIActivityIndicatorView   *aSpinner;
 NSMutableArray *citiesToShowOnMap;
 int currentLocationIndex;
+dispatch_queue_t queue;
 
 #pragma mark - Life cycle methods
 - (void)viewDidLoad
@@ -41,6 +42,8 @@ int currentLocationIndex;
     if (self.tableView) {
         self.tableView.dataSource = self;
     }
+    
+    queue = dispatch_queue_create("com.example.owviewcontroller.queue", DISPATCH_QUEUE_SERIAL);
 }
 
 - (void)didReceiveMemoryWarning
@@ -143,8 +146,6 @@ int currentLocationIndex;
 {
     [[OWCityManager sharedInstance].dictCities removeAllObjects];
     
-    __block dispatch_queue_t queue = dispatch_queue_create("com.example.owviewcontroller.queue", DISPATCH_QUEUE_SERIAL);
-    
     [cities enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSString *cityName = (NSString *)obj;
         
@@ -175,6 +176,8 @@ int currentLocationIndex;
             else
             {
                 NSArray *listItems =[jsonDictionary objectForKey:@"list"];
+                NSLog(@"JSON : %@", jsonDictionary);
+                NSLog(@"list Items : %@", listItems);
                 
                 [listItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                     NSDictionary *oneDayRecord = obj;
@@ -199,7 +202,7 @@ int currentLocationIndex;
                 }];
                 
                 [[OWCityManager sharedInstance].dictCities setObject:weatherRecords forKey:cityName];
-                NSLog(@"Added City : %@", cityName);
+                NSLog(@"Added City : %@ with records : %lu", cityName, (unsigned long)weatherRecords.count);
                 
             }
             if([cityName isEqual:[cities objectAtIndex:0]])
